@@ -64,11 +64,13 @@ public class Main {
 
         int i = scanner.nextInt();
         int j = scanner.nextInt();
+        lab = new char[i][j];
+        String valor;
 
         for (int linha = 0; linha < i; linha++) {
             for (int coluna = 0; coluna < j; coluna++) {
-
-                lab[linha][coluna] = scanner.next(".").charAt(0);
+                valor = scanner.next();
+                lab[linha][coluna] = valor.charAt(0);
             }
 
 
