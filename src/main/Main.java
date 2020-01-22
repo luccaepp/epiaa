@@ -1,6 +1,17 @@
 // nome: Lucca Eppinger
 // nUSP: 11381406
 
+//7 5
+//        . . . . .
+//        . X . X .
+//        . X . X .
+//        . . . . .
+//        . X . X .
+//        . X . X .
+//        . . . . .
+//        0
+//        6 2
+//        0 2
 
 package main;
 
@@ -17,17 +28,25 @@ public class Main {
     public char[][] lab;
     public int linhaAtual;
     public int linhaDestino;
+    public static final int CIMA = 1;
     public int colunaAtual;
     public int colunaDestino;
-
-    public List pilha;
+    public static final int DIREITA = 2;
+    public static final int BAIXO = 3;
+    public static final int ESQUERDA = 4;
+    public int linhaInicial;
+    public int colunaInicial;
+    public int i;
+    public int j;
+    public List pilhas;
+    public String pilha = "";
 
 
     public Main() {
 
         scanner = new Scanner(System.in);
         itens = new ArrayList<Item>();
-        pilha = new ArrayList<Integer>();
+        pilhas = new ArrayList<String>();
 
     }
 
@@ -43,28 +62,28 @@ public class Main {
         lerLabirinto();
         lerItens();
         lerPosicoes();
-        imprimiLabirinto(lab);
+        andar(0);
+        imprimirRespostas();
 
     }
 
+
     private void lerPosicoes() {
 
-        linhaAtual = scanner.nextInt();
-        colunaAtual = scanner.nextInt();
+        linhaInicial = scanner.nextInt();
+        colunaInicial = scanner.nextInt();
         linhaDestino = scanner.nextInt();
         colunaDestino = scanner.nextInt();
-
-        lab[linhaAtual][colunaAtual] = 'E';
-        lab[linhaDestino][colunaDestino] = 'S';
-
+        linhaAtual = linhaInicial;
+        colunaAtual = colunaInicial;
 
     }
 
     public void lerLabirinto() {
 
-        int i = scanner.nextInt();
-        int j = scanner.nextInt();
-        lab = new char[i][j];
+        i = scanner.nextInt();
+        j = scanner.nextInt();
+        lab = new char[i + 1][j + 1];
         String valor;
 
         for (int linha = 0; linha < i; linha++) {
@@ -102,9 +121,8 @@ public class Main {
 
     public void imprimiLabirinto(char[][] lab) {
 
-
-        for (int linha = 0; linha < lab.length; linha++) {
-            for (int coluna = 0; coluna < lab[0].length; coluna++) {
+        for (int linha = 0; linha < i; linha++) {
+            for (int coluna = 0; coluna < j; coluna++) {
 
                 System.out.print(lab[linha][coluna] + " ");
 
@@ -112,7 +130,113 @@ public class Main {
             System.out.println();
 
         }
+        System.out.println();
+
 
     }
 
+    public void andar(int ultimaAcao) {
+
+        imprimiLabirinto(lab);
+
+
+        if (linhaAtual == linhaDestino && colunaAtual == colunaDestino) {
+
+            pilhas.add(pilha);
+            System.out.println("cheguei no fim");
+            volta();
+
+        } else if (linhaAtual != 0 && lab[linhaAtual - 1][colunaAtual] == '.' && ultimaAcao < 1) {
+
+
+            pilha += CIMA;
+            lab[linhaAtual][colunaAtual] = '1';
+            linhaAtual -= 1;
+            andar(0);
+
+
+        } else if (colunaAtual != (j - 1) && lab[linhaAtual][colunaAtual + 1] == '.' && ultimaAcao < 2) {
+
+            pilha += DIREITA;
+            lab[linhaAtual][colunaAtual] = '2';
+
+            colunaAtual += 1;
+            andar(0);
+
+
+        } else if (linhaAtual != (i - 1) && lab[linhaAtual + 1][colunaAtual] == '.' && ultimaAcao < 3) {
+
+            pilha += BAIXO;
+            lab[linhaAtual][colunaAtual] = '3';
+
+            linhaAtual += 1;
+            andar(0);
+
+
+        } else if (colunaAtual != 0 && lab[linhaAtual][colunaAtual - 1] == '.' && ultimaAcao < 4) {
+
+            pilha += ESQUERDA;
+            lab[linhaAtual][colunaAtual] = '4';
+
+            colunaAtual -= 1;
+            andar(0);
+
+
+        } else {
+
+            volta();
+
+        }
+
+
+    }
+
+    private void volta() {
+
+        System.out.println("Voltando");
+
+        if (linhaAtual == linhaInicial && colunaInicial == colunaAtual) {
+        } else {
+
+            int ultimaAcao = pilha.charAt(pilha.length() - 1) - '0';
+            pilha = pilha.substring(0, pilha.length() - 1);
+
+
+            if (ultimaAcao == CIMA) {
+                linhaAtual += 1;
+
+            }
+            if (ultimaAcao == DIREITA) {
+
+                colunaAtual -= 1;
+
+            }
+            if (ultimaAcao == BAIXO) {
+
+                linhaAtual -= 1;
+
+            }
+            if (ultimaAcao == ESQUERDA) {
+
+                colunaAtual += 1;
+
+            }
+            lab[linhaAtual][colunaAtual] = '.';
+
+
+            andar(ultimaAcao);
+
+
+        }
+
+    }
+
+    private void imprimirRespostas() {
+
+
+        pilhas.forEach(passos -> System.out.println(passos));
+
+    }
 }
+
+
