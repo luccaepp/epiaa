@@ -3,6 +3,7 @@
 
 package main;
 
+import explorador.Exploracao;
 import explorador.Item;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ public class Main {
 
     public Scanner scanner;
     public List<Item> itens;
+    public static final int CURTO = 1;
     public char[][] lab;
     public int linhaAtual;
     public int linhaDestino;
@@ -29,12 +31,18 @@ public class Main {
     public List<String> pilhas;
     public String pilha = "";
     public int parametro;
+    public static final int LONGO = 2;
+    public static final int VALIOSO = 3;
+    public static final int RAPIDO = 4;
+    public List<Exploracao> exploracoes;
 
     public Main() {
 
         scanner = new Scanner(System.in);
         itens = new ArrayList<Item>();
         pilhas = new ArrayList<String>();
+        exploracoes = new ArrayList<Exploracao>();
+
 
     }
 
@@ -49,14 +57,15 @@ public class Main {
         lerDados();
         andar(0);
         imprimirRespostas();
+        calcularParametro();
 
     }
+
 
     private void lerDados() {
         lerLabirinto();
         lerItens();
         lerPosicoes();
-        parametro = scanner.nextInt();
     }
 
     private void lerPosicoes() {
@@ -116,12 +125,12 @@ public class Main {
 
     public void andar(int ultimaAcao) {
 
-        imprimiLabirinto(lab);
+        //imprimiLabirinto(lab);
 
         if (linhaAtual == linhaDestino && colunaAtual == colunaDestino) {
 
             pilhas.add(pilha);
-            System.out.println("cheguei no fim");
+            //System.out.println("cheguei no fim");
             volta();
 
         } else if (linhaAtual != 0 && lab[linhaAtual - 1][colunaAtual] == '.' && ultimaAcao < 1) {
@@ -161,7 +170,7 @@ public class Main {
 
     private void volta() {
 
-        System.out.println("Voltando");
+        //System.out.println("Voltando");
         if (linhaAtual == linhaInicial && colunaInicial == colunaAtual) {
         } else {
 
@@ -210,65 +219,130 @@ public class Main {
 
     private void calcularExploracao(String passos) {
 
-        List<String> caminho = new ArrayList<>();
-        List<String> posItem = new ArrayList<>();
-        int li = linhaInicial;
-        int ci = colunaInicial;
-        double tempo = 0;
-        int peso = 0;
-        int valor = 0;
-        int espacos = passos.length();
-        espacos++;
-        char[] passo = passos.toCharArray();
-        int coletados = 0;
+        Exploracao explo = new Exploracao();
+        explo.li = linhaInicial;
+        explo.ci = colunaInicial;
+        explo.tempo = 0;
+        explo.peso = 0;
+        explo.valor = 0;
+        explo.espacos = passos.length();
+        explo.espacos++;
+        explo.passo = passos.toCharArray();
+        explo.coletados = 0;
 
-        caminho.add((li + " " + ci));
+        explo.caminho.add((explo.li + " " + explo.ci));
 
-        for (char a : passo) {
+        for (char a : explo.passo) {
 
             for (Item item : itens) {
 
-                if (item.linha == li && item.coluna == ci) {
-                    valor += item.valor;
-                    peso += item.peso;
-                    coletados++;
-                    posItem.add((li + " " + ci));
+                if (item.linha == explo.li && item.coluna == explo.ci) {
+                    explo.valor += item.valor;
+                    explo.peso += item.peso;
+                    explo.coletados++;
+                    explo.posItem.add((explo.li + " " + explo.ci));
 
                 }
 
             }
-            tempo += calculaTempo(peso);
+            explo.tempo += calculaTempo(explo.peso);
             if (a == '1') {
-                --li;
+                --explo.li;
             }
             if (a == '2') {
-                ++ci;
+                ++explo.ci;
             }
             if (a == '3') {
-                ++li;
+                ++explo.li;
             }
             if (a == '4') {
-                --ci;
+                --explo.ci;
             }
 
-            caminho.add((li + " " + ci));
+            explo.caminho.add((explo.li + " " + explo.ci));
 
         }
 
-        System.out.print(espacos + " ");
-        System.out.println(String.format("%.2f", tempo));
-        for (String pos : caminho) {
+        //System.out.println();
+        exploracoes.add(explo);
+
+    }
+
+    private void calcularParametro() {
+
+        Exploracao explo = new Exploracao();
+
+        parametro = scanner.nextInt();
+
+        if (parametro == CURTO) {
+
+            for (Exploracao curta : exploracoes) {
+
+                if (explo.espacos == 0) {
+                    explo = curta;
+                }
+                if (explo.espacos >= curta.espacos) {
+
+                    explo = curta;
+
+                }
+
+
+            }
+
+
+        } else if (parametro == LONGO) {
+
+            for (Exploracao longa : exploracoes) {
+
+                if (explo.espacos <= longa.espacos) {
+                    explo = longa;
+                }
+
+            }
+
+
+        } else if (parametro == VALIOSO) {
+
+            for (Exploracao valiosa : exploracoes) {
+
+                if (explo.valor <= valiosa.valor) {
+                    explo = valiosa;
+                }
+
+            }
+
+
+        } else if (parametro == RAPIDO) {
+
+            for (Exploracao rapida : exploracoes) {
+
+                if (explo.tempo == 0) {
+                    explo = rapida;
+                }
+                if (explo.tempo >= rapida.tempo) {
+
+                    explo = rapida;
+
+                }
+            }
+        }
+
+        imprimirExploracao(explo);
+    }
+
+    private void imprimirExploracao(Exploracao explo) {
+
+        System.out.print(explo.espacos + " ");
+        System.out.println(String.format("%.2f", explo.tempo));
+        for (String pos : explo.caminho) {
             System.out.println(pos);
 
         }
-        System.out.println(coletados + " " + valor + " " + peso);
-        for (String pos : posItem) {
+        System.out.println(explo.coletados + " " + explo.valor + " " + explo.peso);
+        for (String pos : explo.posItem) {
             System.out.println(pos);
 
         }
-        System.out.println();
-
-
-
     }
 }
